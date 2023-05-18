@@ -272,6 +272,54 @@ class Floor {
     }
 }
 
+class Player {
+    constructor() {
+        this.x = 100;
+        this.y = 0;
+        this.height = gameEngine.spriteCharacter.height;
+        this.width = gameEngine.spriteCharacter.width;
+        this.gravity = 1.5;
+        this.speed = 0;
+        this.jumpHeight = 22;
+        this.jumps = 0;
+        this.score = 0;
+    }
+
+    update() {
+        this.speed += this.gravity;
+        this.y += this.speed;
+
+        if (this.y > gameEngine.gameState.getFloor().y - this.height) {
+            this.y = gameEngine.gameState.getFloor().y - this.height;
+            this.jumps = 0;
+            this.speed = 0;
+        }
+    }
+
+    jump() {
+        if (this.jumps < gameEngine.maxjumps) {
+            this.speed = -this.jumpHeight;
+            this.jumps++;
+        }
+    }
+
+    reset() {
+        this.speed = 0;
+        this.y = 0;
+    }
+
+    getScore() {
+        return this.score;
+    }
+
+    setScore(score) {
+        this.score = score;
+    }
+
+    draw() {
+        gameEngine.spriteCharacter.draw(this.x, this.y);
+    }
+}
 
 
 const gameEngine = new GameEngine();
