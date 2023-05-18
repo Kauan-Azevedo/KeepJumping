@@ -321,6 +321,72 @@ class Player {
     }
 }
 
+class Enemy {
+    constructor() {
+        this.enemies = [];
+        this.colors = ["#FF2511", "#790000", "#890000", "#aa0000", "#ec0000"];
+        this.delay = 0;
+    }
+
+    create() {
+        this.enemies.push({
+            x: gameEngine.WIDTH,
+            width: 50,
+            height: 35 + Math.floor(85 * Math.random()),
+            color: this.colors[Math.floor(5 * Math.random())],
+        });
+        this.delay = 20 + Math.floor(40 * Math.random());
+    }
+
+    update() {
+        if (this.delay === 0) {
+            this.create();
+        } else {
+            this.delay--;
+            for (let i = 0, size = this.enemies.length; i < size; i++) {
+                let enemy = this.enemies[i];
+                enemy.x -= gameEngine.speed;
+
+                if (
+                    gameEngine.gameState.getPlayer().x <
+                        enemy.x + enemy.width &&
+                    gameEngine.gameState.getPlayer().x +
+                        gameEngine.gameState.getPlayer().width >=
+                        enemy.x &&
+                    gameEngine.gameState.getPlayer().y +
+                        gameEngine.gameState.getPlayer().height >=
+                        gameEngine.gameState.getFloor().y - enemy.height
+                ) {
+                    gameEngine.gameState.setGameOver();
+                } else if (enemy.x === 0) {
+                    gameEngine.gameState.getPlayer().score++;
+                } else if (enemy.x <= -enemy.width) {
+                    this.enemies.splice(i, 1);
+                    size--;
+                    i--;
+                }
+            }
+        }
+    }
+
+    clear() {
+        this.enemies = [];
+    }
+
+    draw() {
+        for (let i = 0, size = this.enemies.length; i < size; i++) {
+            let enemy = this.enemies[i];
+
+            gameEngine.ctx.fillStyle = enemy.color;
+            gameEngine.ctx.fillRect(
+                enemy.x,
+                gameEngine.gameState.getFloor().y - enemy.height,
+                enemy.width,
+                enemy.height
+            );
+        }
+    }
+}
 
 const gameEngine = new GameEngine();
 gameEngine.initialize();
