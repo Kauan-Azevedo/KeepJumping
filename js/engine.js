@@ -37,127 +37,130 @@ const bg = new Sprite(0, 0, 800, 552),
 
 //objetos
 let states = {
-        play: 0,
-        playing: 1,
-        gameover: 2,
+    play: 0,
+    playing: 1,
+    gameover: 2,
+};
+
+let floor = {
+    x: 0,
+    y: 545,
+    height: 50,
+
+    update: () => {
+        this.x -= speed;
+        if (this.x <= -155) {
+            this.x = 0;
+        }
     },
-    floor = {
-        x: 0,
-        y: 545,
-        height: 50,
 
-        update: () => {
-            this.x -= speed;
-            if (this.x <= -155) {
-                this.x = 0;
-            }
-        },
-
-        draw: () => {
-            spriteFloor.draw(this.x, this.y);
-            spriteFloor.draw(this.x + spriteFloor.width, this.y);
-        },
+    draw: () => {
+        spriteFloor.draw(this.x, this.y);
+        spriteFloor.draw(this.x + spriteFloor.width, this.y);
     },
-    player = {
-        x: 100,
-        y: 0,
-        height: spriteCharacter.height,
-        width: spriteCharacter.width,
-        gravity: 1.5,
-        speed: 0,
-        jumpHeight: 22,
-        jumps: 0,
-        score: 0,
+};
 
-        update: () => {
-            this.speed += this.gravity;
-            this.y += this.speed;
+let player = {
+    x: 100,
+    y: 0,
+    height: spriteCharacter.height,
+    width: spriteCharacter.width,
+    gravity: 1.5,
+    speed: 0,
+    jumpHeight: 22,
+    jumps: 0,
+    score: 0,
 
-            if (this.y > floor.y - this.height) {
-                this.y = floor.y - this.height;
-                this.jumps = 0;
-                this.speed = 0;
-            }
-        },
-        jump: () => {
-            if (this.jumps < maxjumps) {
-                this.speed = -this.jumpHeight;
-                this.jumps++;
-            }
-        },
-        reset: () => {
+    update: () => {
+        this.speed += this.gravity;
+        this.y += this.speed;
+
+        if (this.y > floor.y - this.height) {
+            this.y = floor.y - this.height;
+            this.jumps = 0;
             this.speed = 0;
-            this.y = 0;
-
-            if (this.score > record) {
-                localStorage.setItem("record", this.score);
-                record = this.score;
-            }
-
-            this.score = 0;
-        },
-
-        draw: () => {
-            spriteCharacter.draw(this.x, this.y);
-        },
+        }
     },
-    enemy = {
-        enemies: [],
-        colors: ["#FF2511", "#790000", "#890000", "#aa0000", "#ec0000"],
-        delay: 0,
+    jump: () => {
+        if (this.jumps < maxjumps) {
+            this.speed = -this.jumpHeight;
+            this.jumps++;
+        }
+    },
+    reset: () => {
+        this.speed = 0;
+        this.y = 0;
 
-        create: () => {
-            this.enemies.push({
-                x: WIDTH,
-                width: 50, // + Math.floor(20 * Math.random()),
-                height: 35 + Math.floor(85 * Math.random()),
-                color: this.colors[Math.floor(5 * Math.random())],
-            });
-            this.delay = 20 + Math.floor(40 * Math.random());
-        },
-        update: () => {
-            if (this.delay === 0) {
-                this.create();
-            } else {
-                this.delay--;
-                for (let i = 0, size = this.enemies.length; i < size; i++) {
-                    let enemy = this.enemies[i];
-                    enemy.x -= speed;
-                    //colisao
-                    if (
-                        player.x < enemy.x + enemy.width &&
-                        player.x + player.width >= enemy.x &&
-                        player.y + player.height >= floor.y - enemy.height
-                    ) {
-                        gameState = states.gameover;
-                    } else if (enemy.x === 0) {
-                        player.score++;
-                    } else if (enemy.x <= -enemy.width) {
-                        this.enemies.splice(i, 1);
-                        size--;
-                        i--;
-                    }
-                }
-            }
-        },
+        if (this.score > record) {
+            localStorage.setItem("record", this.score);
+            record = this.score;
+        }
 
-        clear: () => {
-            this.enemies = [];
-        },
-        draw: () => {
+        this.score = 0;
+    },
+
+    draw: () => {
+        spriteCharacter.draw(this.x, this.y);
+    },
+};
+
+let enemy = {
+    enemies: [],
+    colors: ["#FF2511", "#790000", "#890000", "#aa0000", "#ec0000"],
+    delay: 0,
+
+    create: () => {
+        this.enemies.push({
+            x: WIDTH,
+            width: 50, // + Math.floor(20 * Math.random()),
+            height: 35 + Math.floor(85 * Math.random()),
+            color: this.colors[Math.floor(5 * Math.random())],
+        });
+        this.delay = 20 + Math.floor(40 * Math.random());
+    },
+    update: () => {
+        if (this.delay === 0) {
+            this.create();
+        } else {
+            this.delay--;
             for (let i = 0, size = this.enemies.length; i < size; i++) {
                 let enemy = this.enemies[i];
-
-                ctx.fillStyle = enemy.color;
-                ctx.fillRect(
-                    enemy.x,
-                    floor.y - enemy.height,
-                    enemy.width,
-                    enemy.height
-                );
+                enemy.x -= speed;
+                //colisao
+                if (
+                    player.x < enemy.x + enemy.width &&
+                    player.x + player.width >= enemy.x &&
+                    player.y + player.height >= floor.y - enemy.height
+                ) {
+                    gameState = states.gameover;
+                } else if (enemy.x === 0) {
+                    player.score++;
+                } else if (enemy.x <= -enemy.width) {
+                    this.enemies.splice(i, 1);
+                    size--;
+                    i--;
+                }
             }
-        },
-    };
+        }
+    },
+
+    clear: () => {
+        this.enemies = [];
+    },
+    draw: () => {
+        for (let i = 0, size = this.enemies.length; i < size; i++) {
+            let enemy = this.enemies[i];
+
+            ctx.fillStyle = enemy.color;
+            ctx.fillRect(
+                enemy.x,
+                floor.y - enemy.height,
+                enemy.width,
+                enemy.height
+            );
+        }
+    },
+};
 
 function click(e) {
     if (gameState === states.playing) {
@@ -211,7 +214,7 @@ function main() {
     img.src = "../imagens/Sheet.png";
 
     run();
-} // main
+}
 
 function run() {
     update();
@@ -230,10 +233,6 @@ function update() {
 }
 
 function draw() {
-    //colocar sprite**
-
-    //ctx.fillStyle = "#41729F"
-    //ctx.fillRect(0, 0, WIDTH, HEIGHT)
     bg.draw(0, 0);
 
     ctx.fillStyle = "white";
