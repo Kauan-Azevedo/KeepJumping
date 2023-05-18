@@ -79,6 +79,12 @@ class GameEngine {
     }
 
     draw() {
+        if (this.gameState.isPlaying()) {
+            this.gameState.getFloor().draw();
+            this.gameState.getPlayer().draw();
+            this.gameState.getEnemy().draw();
+        }
+
         this.gameState.getBackground().draw(0, 0);
 
         this.ctx.fillStyle = "white";
@@ -139,13 +145,7 @@ class GameEngine {
                 );
             }
             this.ctx.restore();
-        } else if (this.gameState.isPlaying()) {
-            this.gameState.getPlayer().draw();
-            this.gameState.getEnemy().draw();
-            this.gameState.getFloor().draw();
         }
-        this.gameState.getFloor().draw();
-        this.gameState.getPlayer().draw();
     }
 }
 
@@ -390,3 +390,4 @@ class Enemy {
 
 const gameEngine = new GameEngine();
 gameEngine.initialize();
+gameEngine.run();
