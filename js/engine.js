@@ -39,7 +39,7 @@ class GameEngine {
         }
 
         this.img = new Image();
-        this.img.src = "../imagens/Sheet.png";
+        this.img.src = "../images/Sheet.png";
 
         this.run();
     }
