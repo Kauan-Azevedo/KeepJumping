@@ -226,6 +226,29 @@ class GameState {
     }
 }
 
+class Sprite {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    draw(xCanvas, yCanvas) {
+        gameEngine.ctx.drawImage(
+            gameEngine.img,
+            this.x,
+            this.y,
+            this.width,
+            this.height,
+            xCanvas,
+            yCanvas,
+            this.width,
+            this.height
+        );
+    }
+}
+
 
 
 const gameEngine = new GameEngine();
