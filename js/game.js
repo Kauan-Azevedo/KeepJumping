@@ -8,6 +8,10 @@ class GameEngine {
         this.gameState = null;
         this.record = null;
         this.img = null;
+        this.background = null;
+        this.spriteFloor = null;
+        this.spriteCharacter = null;
+        this.maxjumps = 2;
     }
 
     initialize() {
@@ -31,7 +35,11 @@ class GameEngine {
         document.addEventListener("keydown", this.keyboard.bind(this));
         document.addEventListener("mousedown", this.click.bind(this));
 
+        this.spriteFloor = new Sprite(0, 552, 800, 56);
+        this.spriteCharacter = new Sprite(800, 0, 39, 66);
+
         this.gameState = new GameState();
+        this.gameState.initialize();
         this.record = localStorage.getItem("record");
 
         if (this.record === null) {
@@ -79,13 +87,7 @@ class GameEngine {
     }
 
     draw() {
-        if (this.gameState.isPlaying()) {
-            this.gameState.getFloor().draw();
-            this.gameState.getPlayer().draw();
-            this.gameState.getEnemy().draw();
-        }
-
-        this.gameState.getBackground().draw(0, 0);
+        this.gameState.getBackground().draw(0, 0, this.ctx);
 
         this.ctx.fillStyle = "white";
         this.ctx.font = "50px Roboto";
@@ -145,6 +147,12 @@ class GameEngine {
                 );
             }
             this.ctx.restore();
+        }
+
+        if (this.gameState.isPlaying()) {
+            this.gameState.getFloor().draw(this.spriteFloor, this.ctx);
+            this.gameState.getPlayer().draw(this.spriteCharacter, this.ctx);
+            this.gameState.getEnemy().draw(this.ctx);
         }
     }
 }
@@ -234,8 +242,8 @@ class Sprite {
         this.height = height;
     }
 
-    draw(xCanvas, yCanvas) {
-        gameEngine.ctx.drawImage(
+    draw(xCanvas, yCanvas, ctx) {
+        ctx.drawImage(
             gameEngine.img,
             this.x,
             this.y,
@@ -263,12 +271,9 @@ class Floor {
         }
     }
 
-    draw() {
-        gameEngine.spriteFloor.draw(this.x, this.y);
-        gameEngine.spriteFloor.draw(
-            this.x + gameEngine.spriteFloor.width,
-            this.y
-        );
+    draw(spriteFloor, ctx) {
+        spriteFloor.draw(this.x, this.y, ctx);
+        spriteFloor.draw(this.x + spriteFloor.width, this.y, ctx);
     }
 }
 
@@ -316,8 +321,8 @@ class Player {
         this.score = score;
     }
 
-    draw() {
-        gameEngine.spriteCharacter.draw(this.x, this.y);
+    draw(spriteCharacter, ctx) {
+        spriteCharacter.draw(this.x, this.y, ctx);
     }
 }
 
@@ -373,12 +378,12 @@ class Enemy {
         this.enemies = [];
     }
 
-    draw() {
+    draw(ctx) {
         for (let i = 0, size = this.enemies.length; i < size; i++) {
             let enemy = this.enemies[i];
 
-            gameEngine.ctx.fillStyle = enemy.color;
-            gameEngine.ctx.fillRect(
+            ctx.fillStyle = enemy.color;
+            ctx.fillRect(
                 enemy.x,
                 gameEngine.gameState.getFloor().y - enemy.height,
                 enemy.width,
@@ -390,4 +395,3 @@ class Enemy {
 
 const gameEngine = new GameEngine();
 gameEngine.initialize();
-gameEngine.run();
