@@ -26,7 +26,9 @@ class GameEngine {
         this.canvas = document.createElement("canvas");
         this.canvas.width = this.WIDTH;
         this.canvas.height = this.HEIGHT;
-        this.canvas.style.border = "5px solid cyan";
+        this.canvas.style.border = "5px solid black";
+        this.canvas.style.borderRadius = "10px";
+        this.canvas.style.margin = "0 auto";
 
         this.ctx = this.canvas.getContext("2d");
 
@@ -230,7 +232,7 @@ class GameState {
         this.player = new Player();
         this.enemy = new Enemy();
         this.background = new Sprite(0, 0, 800, 552);
-        this.record = localStorage.getItem("record") || 0;
+        this.record = parseInt(localStorage.getItem("record")) || 0;
     }
 }
 
