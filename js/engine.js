@@ -149,6 +149,82 @@ class GameEngine {
     }
 }
 
+class GameState {
+    constructor() {
+        this.states = {
+            play: 0,
+            playing: 1,
+            gameover: 2,
+        };
+
+        this.floor = null;
+        this.player = null;
+        this.enemy = null;
+        this.background = null;
+        this.state = this.states.play;
+        this.record = 0;
+    }
+
+    isPlay() {
+        return this.state === this.states.play;
+    }
+
+    isPlaying() {
+        return this.state === this.states.playing;
+    }
+
+    isGameOver() {
+        return this.state === this.states.gameover;
+    }
+
+    setPlay() {
+        this.state = this.states.play;
+    }
+
+    setPlaying() {
+        this.state = this.states.playing;
+    }
+
+    setGameOver() {
+        this.state = this.states.gameover;
+    }
+
+    getFloor() {
+        return this.floor;
+    }
+
+    getPlayer() {
+        return this.player;
+    }
+
+    getEnemy() {
+        return this.enemy;
+    }
+
+    getBackground() {
+        return this.background;
+    }
+
+    reset() {
+        this.player.reset();
+
+        if (this.player.getScore() > this.record) {
+            localStorage.setItem("record", this.player.getScore());
+            this.record = this.player.getScore();
+        }
+
+        this.player.setScore(0);
+        this.enemy.clear();
+    }
+
+    initialize() {
+        this.floor = new Floor();
+        this.player = new Player();
+        this.enemy = new Enemy();
+        this.background = new Sprite(0, 0, 800, 552);
+        this.record = localStorage.getItem("record") || 0;
+    }
+}
 
 
 
