@@ -249,6 +249,29 @@ class Sprite {
     }
 }
 
+class Floor {
+    constructor() {
+        this.x = 0;
+        this.y = 545;
+        this.height = 50;
+    }
+
+    update() {
+        this.x -= gameEngine.speed;
+        if (this.x <= -155) {
+            this.x = 0;
+        }
+    }
+
+    draw() {
+        gameEngine.spriteFloor.draw(this.x, this.y);
+        gameEngine.spriteFloor.draw(
+            this.x + gameEngine.spriteFloor.width,
+            this.y
+        );
+    }
+}
+
 
 
 const gameEngine = new GameEngine();
