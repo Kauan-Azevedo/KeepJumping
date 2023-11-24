@@ -1,376 +1,277 @@
-class GameEngine {
-  constructor() {
-    this.canvas = null;
-    this.ctx = null;
-    this.HEIGHT = null;
-    this.WIDTH = null;
-    this.speed = 6;
-    this.gameState = null;
-    this.record = null;
-    this.img = null;
-    this.background = null;
-    this.spriteFloor = null;
-    this.spriteCharacter = null;
-    this.maxjumps = 2;
-  }
+// variáveis do jogo
+var canvas,
+  ctx,
+  ALTURA,
+  LARGURA,
+  velocidade = 10,
+  maxpulos = 2,
+  recorde,
+  img,
+  estadoAtual;
 
-  initialize() {
-    this.HEIGHT = window.innerHeight;
-    this.WIDTH = window.innerWidth;
+// SPRITES
+function Sprite(x, y, largura, altura) {
+  this.x = x;
+  this.y = y;
+  this.largura = largura;
+  this.altura = altura;
 
-    if (this.WIDTH >= 600) {
-      this.WIDTH = 800;
-      this.HEIGHT = 600;
-    }
-
-    this.canvas = document.createElement("canvas");
-    this.canvas.width = this.WIDTH;
-    this.canvas.height = this.HEIGHT;
-    this.canvas.style.border = "5px solid black";
-    this.canvas.style.borderRadius = "10px";
-    this.canvas.style.margin = "0 auto";
-
-    this.ctx = this.canvas.getContext("2d");
-
-    document.body.appendChild(this.canvas);
-
-    document.addEventListener("keydown", this.keyboard.bind(this));
-    document.addEventListener("mousedown", this.click.bind(this));
-
-    this.spriteFloor = new Sprite(0, 552, 800, 56);
-    this.spriteCharacter = new Sprite(800, 0, 39, 66);
-
-    this.gameState = new GameState();
-    this.gameState.initialize();
-    this.record = localStorage.getItem("record");
-
-    if (this.record === null) {
-      this.record = 0;
-    }
-
-    this.img = new Image();
-    this.img.src = "../images/Sheet.png";
-
-    this.run();
-  }
-
-  keyboard(e) {
-    let x = e.keyCode;
-
-    if (x === 32) {
-      this.click();
-    }
-  }
-
-  click() {
-    if (this.gameState.isPlaying()) {
-      this.gameState.getPlayer().jump();
-    } else if (this.gameState.isPlay()) {
-      this.gameState.setPlaying();
-    } else if (this.gameState.isGameOver()) {
-      this.gameState.setPlay();
-      this.gameState.reset();
-    }
-  }
-
-  run() {
-    this.update();
-    this.draw();
-
-    window.requestAnimationFrame(this.run.bind(this));
-  }
-
-  update() {
-    if (this.gameState.isPlaying()) {
-      this.gameState.getPlayer().update();
-      this.gameState.getEnemy().update();
-      this.gameState.getFloor().update();
-    }
-  }
-
-  draw() {
-    this.gameState.getBackground().draw(0, 0, this.ctx);
-
-    this.ctx.fillStyle = "white";
-    this.ctx.font = "50px Roboto";
-    this.ctx.fillText(this.gameState.getPlayer().getScore(), 38, 68);
-
-    if (this.gameState.isPlay()) {
-      this.ctx.fillStyle = "limegreen";
-      this.ctx.fillRect(this.WIDTH / 2 - 50, this.HEIGHT / 2 - 50, 100, 100);
-    } else if (this.gameState.isGameOver()) {
-      this.ctx.fillStyle = "red";
-      this.ctx.fillRect(this.WIDTH / 2 - 50, this.HEIGHT / 2 - 50, 100, 100);
-
-      this.ctx.save();
-      this.ctx.translate(this.WIDTH / 2, this.HEIGHT / 2);
-      this.ctx.fillStyle = "white";
-
-      if (this.gameState.getPlayer().getScore() > this.record) {
-        this.ctx.fillText("Novo Recorde!", -150, -65);
-      } else if (this.record < 10) {
-        this.ctx.fillText("Recorde: " + this.record, -99, -65);
-      } else if (this.record > 10 && this.record < 100) {
-        this.ctx.fillText("Recorde: " + this.record, -112, -65);
-      } else {
-        this.ctx.fillText("Recorde: " + this.record, -125, -65);
-      }
-
-      if (this.gameState.getPlayer().getScore() < 10) {
-        this.ctx.fillText(this.gameState.getPlayer().getScore(), -14, 19);
-      } else if (
-        this.gameState.getPlayer().getScore() > 10 &&
-        this.gameState.getPlayer().getScore() < 100
-      ) {
-        this.ctx.fillText(this.gameState.getPlayer().getScore(), -28, 19);
-      } else {
-        this.ctx.fillText(this.gameState.getPlayer().getScore(), -45, 19);
-      }
-      this.ctx.restore();
-    }
-
-    if (this.gameState.isPlaying()) {
-      this.gameState.getFloor().draw(this.spriteFloor, this.ctx);
-      this.gameState.getPlayer().draw(this.spriteCharacter, this.ctx);
-      this.gameState.getEnemy().draw(this.ctx);
-    }
-  }
-}
-
-class GameState {
-  constructor() {
-    this.states = {
-      play: 0,
-      playing: 1,
-      gameover: 2,
-    };
-
-    this.floor = null;
-    this.player = null;
-    this.enemy = null;
-    this.background = null;
-    this.state = this.states.play;
-    this.record = 0;
-  }
-
-  isPlay() {
-    return this.state === this.states.play;
-  }
-
-  isPlaying() {
-    return this.state === this.states.playing;
-  }
-
-  isGameOver() {
-    return this.state === this.states.gameover;
-  }
-
-  setPlay() {
-    this.state = this.states.play;
-  }
-
-  setPlaying() {
-    this.state = this.states.playing;
-  }
-
-  setGameOver() {
-    this.state = this.states.gameover;
-  }
-
-  getFloor() {
-    return this.floor;
-  }
-
-  getPlayer() {
-    return this.player;
-  }
-
-  getEnemy() {
-    return this.enemy;
-  }
-
-  getBackground() {
-    return this.background;
-  }
-
-  reset() {
-    this.player.reset();
-
-    if (this.player.getScore() > this.record) {
-      localStorage.setItem("record", this.player.getScore());
-      this.record = this.player.getScore();
-    }
-
-    this.player.setScore(0);
-    this.enemy.clear();
-  }
-
-  initialize() {
-    this.floor = new Floor();
-    this.player = new Player();
-    this.enemy = new Enemy();
-    this.background = new Sprite(0, 0, 800, 552);
-    this.record = parseInt(localStorage.getItem("record")) || 0;
-  }
-}
-
-class Sprite {
-  constructor(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-  }
-
-  draw(xCanvas, yCanvas, ctx) {
+  this.desenha = function (xCanvas, yCanvas) {
     ctx.drawImage(
-      gameEngine.img,
+      img,
       this.x,
       this.y,
-      this.width,
-      this.height,
+      this.largura,
+      this.altura,
       xCanvas,
       yCanvas,
-      this.width,
-      this.height
+      this.largura,
+      this.altura
     );
-  }
+  };
 }
 
-class Floor {
-  constructor() {
-    this.x = 0;
-    this.y = 545;
-    this.height = 50;
-  }
+var bg = new Sprite(0, 0, 800, 552),
+  spriteChao = new Sprite(0, 552, 800, 56),
+  spritePersonagem = new Sprite(800, 0, 39, 66);
 
-  update() {
-    this.x -= gameEngine.speed;
-    if (this.x <= -155) {
-      this.x = 0;
-    }
-  }
+//objetos
+var estados = {
+    jogar: 0,
+    jogando: 1,
+    gameover: 2,
+  },
+  chao = {
+    x: 0,
+    y: 545,
+    altura: 50,
 
-  draw(spriteFloor, ctx) {
-    spriteFloor.draw(this.x, this.y, ctx);
-    spriteFloor.draw(this.x + spriteFloor.width, this.y, ctx);
-  }
-}
+    atualiza: function () {
+      this.x -= velocidade;
+      if (this.x <= -155) {
+        this.x = 0;
+      }
+    },
 
-class Player {
-  constructor() {
-    this.x = 100;
-    this.y = 0;
-    this.height = gameEngine.spriteCharacter.height;
-    this.width = gameEngine.spriteCharacter.width;
-    this.gravity = 0.7;
-    this.speed = 0;
-    this.jumpHeight = 15;
-    this.jumps = 0;
-    this.score = 0;
-  }
+    desenha: function () {
+      spriteChao.desenha(this.x, this.y);
+      spriteChao.desenha(this.x + spriteChao.largura, this.y);
+    },
+  },
+  bloco = {
+    x: 100,
+    y: 0,
+    altura: spritePersonagem.altura,
+    largura: spritePersonagem.largura,
+    // gravidade: 1.5,
+    gravidade: 1.7,
+    velocidade: 0,
+    forcaPulo: 22,
+    pulos: 0,
+    score: 0,
 
-  update() {
-    this.speed += this.gravity;
-    this.y += this.speed;
+    atualiza: function () {
+      this.velocidade += this.gravidade;
+      this.y += this.velocidade;
 
-    if (this.y > gameEngine.gameState.getFloor().y - this.height) {
-      this.y = gameEngine.gameState.getFloor().y - this.height;
-      this.jumps = 0;
-      this.speed = 0;
-    }
-  }
+      if (this.y > chao.y - this.altura) {
+        this.y = chao.y - this.altura;
+        this.pulos = 0;
+        this.velocidade = 0;
+      }
+    },
+    pula: function () {
+      if (this.pulos < maxpulos) {
+        this.velocidade = -this.forcaPulo;
+        this.pulos++;
+      }
+    },
+    reset: function () {
+      this.velocidade = 0;
+      this.y = 0;
 
-  jump() {
-    if (this.jumps < gameEngine.maxjumps) {
-      this.speed = -this.jumpHeight;
-      this.jumps++;
-    }
-  }
+      if (this.score > recorde) {
+        localStorage.setItem("recorde", this.score);
+        recorde = this.score;
+      }
 
-  reset() {
-    this.speed = 0;
-    this.y = 0;
-  }
+      this.score = 0;
+    },
 
-  getScore() {
-    return this.score;
-  }
+    desenha: function () {
+      spritePersonagem.desenha(this.x, this.y);
+    },
+  },
+  inimigo = {
+    _ini: [],
+    cores: ["#FF2511", "#790000", "#890000", "#aa0000", "#ec0000"],
+    tempoInsere: 0,
 
-  setScore(score) {
-    this.score = score;
-  }
-
-  draw(spriteCharacter, ctx) {
-    spriteCharacter.draw(this.x, this.y, ctx);
-  }
-}
-
-class Enemy {
-  constructor() {
-    this.enemies = [];
-    this.colors = ["#FF2511", "#790000", "#890000", "#aa0000", "#ec0000"];
-    this.delay = 0;
-  }
-
-  create() {
-    this.enemies.push({
-      x: gameEngine.WIDTH,
-      width: 50,
-      height: 35 + Math.floor(85 * Math.random()),
-      color: this.colors[Math.floor(5 * Math.random())],
-    });
-    this.delay = 50 + Math.floor(50 * Math.random());
-  }
-
-  update() {
-    if (this.delay === 0) {
-      this.create();
-    } else {
-      this.delay--;
-      for (let i = 0, size = this.enemies.length; i < size; i++) {
-        let enemy = this.enemies[i];
-        enemy.x -= gameEngine.speed;
-
-        if (
-          gameEngine.gameState.getPlayer().x < enemy.x + enemy.width &&
-          gameEngine.gameState.getPlayer().x +
-            gameEngine.gameState.getPlayer().width >=
-            enemy.x &&
-          gameEngine.gameState.getPlayer().y +
-            gameEngine.gameState.getPlayer().height >=
-            gameEngine.gameState.getFloor().y - enemy.height
-        ) {
-          gameEngine.gameState.setGameOver();
-        } else if (enemy.x === 0) {
-          gameEngine.gameState.getPlayer().score++;
-        } else if (enemy.x <= -enemy.width) {
-          this.enemies.splice(i, 1);
-          size--;
-          i--;
+    gerar: function () {
+      this._ini.push({
+        x: LARGURA,
+        largura: 50, // + Math.floor(20 * Math.random()),
+        altura: 35 + Math.floor(85 * Math.random()),
+        cor: this.cores[Math.floor(5 * Math.random())],
+      });
+      this.tempoInsere = 20 + Math.floor(40 * Math.random());
+    },
+    atualiza: function () {
+      if (this.tempoInsere == 0) {
+        this.gerar();
+      } else {
+        this.tempoInsere--;
+        for (var i = 0, tam = this._ini.length; i < tam; i++) {
+          var ini = this._ini[i];
+          ini.x -= velocidade;
+          //colisao
+          if (
+            bloco.x < ini.x + ini.largura &&
+            bloco.x + bloco.largura >= ini.x &&
+            bloco.y + bloco.altura >= chao.y - ini.altura
+          ) {
+            estadoAtual = estados.gameover;
+          } else if (ini.x == 0) {
+            bloco.score++;
+          } else if (ini.x <= -ini.largura) {
+            this._ini.splice(i, 1);
+            tam--;
+            i--;
+          }
         }
       }
-    }
-  }
+    },
 
-  clear() {
-    this.enemies = [];
-  }
+    limpa: function () {
+      this._ini = [];
+    },
+    desenha: function () {
+      for (var i = 0, tamanho = this._ini.length; i < tamanho; i++) {
+        var ini = this._ini[i];
 
-  draw(ctx) {
-    for (let i = 0, size = this.enemies.length; i < size; i++) {
-      let enemy = this.enemies[i];
+        ctx.fillStyle = ini.cor;
+        ctx.fillRect(ini.x, chao.y - ini.altura, ini.largura, ini.altura);
+      }
+    },
+  };
 
-      ctx.fillStyle = enemy.color;
-      ctx.fillRect(
-        enemy.x,
-        gameEngine.gameState.getFloor().y - enemy.height,
-        enemy.width,
-        enemy.height
-      );
-    }
+function clique(event) {
+  if (estadoAtual == estados.jogando) {
+    bloco.pula();
+  } else if (estadoAtual == estados.jogar) {
+    estadoAtual = estados.jogando;
+  } else if (estadoAtual == estados.gameover) {
+    estadoAtual = estados.jogar;
+    bloco.y = 0;
+    inimigo.limpa();
+    bloco.reset();
   }
 }
 
-const gameEngine = new GameEngine();
-gameEngine.initialize();
+function main() {
+  ALTURA = window.innerHeight;
+  LARGURA = window.innerWidth;
+
+  if (LARGURA >= 600) {
+    LARGURA = 800;
+    ALTURA = 600;
+  }
+
+  canvas = document.createElement("canvas");
+  canvas.width = LARGURA;
+  canvas.height = ALTURA;
+  canvas.style.border = "5px solid cyan";
+
+  ctx = canvas.getContext("2d");
+
+  document.body.appendChild(canvas);
+
+  document.addEventListener("keydown", teclado);
+
+  function teclado(event) {
+    var x = event.keyCode;
+
+    if (x == 32) {
+      clique();
+    }
+  }
+  document.addEventListener("mousedown", clique);
+  estadoAtual = estados.jogar;
+  recorde = localStorage.getItem("recorde");
+
+  if (recorde == null) {
+    recorde = 0;
+  }
+
+  img = new Image();
+  img.src = "../images/Sheet.png";
+
+  rodar();
+} // main
+function rodar() {
+  atualizar();
+  desenhar();
+
+  window.requestAnimationFrame(rodar);
+}
+
+function atualizar() {
+  if (estadoAtual == estados.jogando) {
+    bloco.atualiza();
+    inimigo.atualiza();
+
+    chao.atualiza();
+  }
+}
+
+function desenhar() {
+  //colocar sprite**
+
+  //   ctx.fillStyle = "#41729F";
+  //   ctx.fillRect(0, 0, LARGURA, ALTURA);
+  bg.desenha(0, 0);
+
+  ctx.fillStyle = "white";
+  ctx.font = "50px Roboto";
+  ctx.fillText(bloco.score, 38, 68);
+
+  if (estadoAtual == estados.jogar) {
+    ctx.fillStyle = "limegreen";
+    ctx.fillRect(LARGURA / 2 - 50, ALTURA / 2 - 50, 100, 100);
+  } else if (estadoAtual == estados.gameover) {
+    ctx.fillStyle = "red";
+    ctx.fillRect(LARGURA / 2 - 50, ALTURA / 2 - 50, 100, 100);
+
+    ctx.save();
+    ctx.translate(LARGURA / 2, ALTURA / 2);
+    ctx.fillStyle = "white";
+
+    if (bloco.score > recorde) {
+      ctx.fillText("Novo Recorde!", -150, -65);
+    } else if (recorde < 10) {
+      ctx.fillText("Recorde: " + recorde, -99, -65);
+    } else if (recorde > 10 && recorde < 100) {
+      ctx.fillText("Recorde: " + recorde, -112, -65);
+    } else {
+      ctx.fillText("Recorde: " + recorde, -125, -65);
+    }
+
+    if (bloco.score < 10) {
+      ctx.fillText(bloco.score, -14, 19);
+    } else if (bloco.score > 10 && bloco.score < 100) {
+      ctx.fillText(bloco.score, -28, 19);
+    } else {
+      ctx.fillText(bloco.score, -45, 19);
+    }
+    ctx.restore();
+  } else if (estadoAtual == estados.jogando) {
+    bloco.desenha();
+    inimigo.desenha();
+    chao.desenha();
+  }
+  chao.desenha();
+  bloco.desenha();
+}
+
+// inicializar o jogo
+main();
